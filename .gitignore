@@ -1,0 +1,6 @@
+/archives/
+/chroot/
+/images/
+/src/
+/.*
+!/.gitignore
