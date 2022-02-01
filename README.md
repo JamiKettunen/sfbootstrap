@@ -41,7 +41,7 @@ There are a few configurable (set outside the script in env) variables that can 
 * `PLATFORM_SDK_ROOT`: Directory path  all chroots, defaults to `$SFB_ROOT/chroot`
 
 ## Scripting
-If you're interested in scripting, any of the `sfb_`-prefixed functions can be executed via the [`sfbootstrap``](sfbootstrap.sh) script when passed as arguments; for example `./sfbootstrap.sh manual_hybris_patches_applied` can be used to check if [hybris-patches](https://github.com/mer-hybris/hybris-patches) are applied in the local tree.
+If you're interested in scripting, any of the `sfb_`-prefixed functions can be executed via the [`sfbootstrap`](sfbootstrap.sh) script when passed as arguments; for example `./sfbootstrap.sh manual_hybris_patches_applied` can be used to check if [hybris-patches](https://github.com/mer-hybris/hybris-patches) are applied in the local tree.
 
 ## Files read from host environment
 * `~/.gitconfig` (reused for `repo` in HA build chroot for automation etc.)
