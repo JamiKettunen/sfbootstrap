@@ -1,6 +1,9 @@
 # sfbootstrap
 The all-in-one Sailfish OS local development bootstrapping script.
 
+## Screenshot
+![Image of ./sfbootstrap.sh status](screenshot.png)
+
 ## Quick start
 In case you haven't already, you should configure git with the basics:
 ```bash
