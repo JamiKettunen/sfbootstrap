@@ -55,13 +55,15 @@ sfb_move_artifacts() {
 	sfb_log "Done!"
 }
 sfb_build_packages() {
+	local cmd=()
 	if [ ! -e "$ANDROID_ROOT/$SFB_BP" ]; then
 		sfb_log "Device sources aren't properly setup (missing droid-hal-$DEVICE)!"
 		return
 	fi
-	sfb_hook_exec pre-build-packages $@
+	sfb_hook_exec pre-build-packages "$@"
 	if [ $# -gt 0 ]; then
-		sfb_chroot sfossdk sh -c "$SFB_BP $@" || return 1
+		cmd=($SFB_BP "$@")
+		sfb_chroot sfossdk "${cmd[@]}" || return 1
 	else
 		sfb_hook_exec pre-build-dhd
 		sfb_chroot sfossdk sh -c "$SFB_BP --droid-hal" || return 1
@@ -96,7 +98,7 @@ sfb_build_packages() {
 		sfb_hook_exec post-build-image
 	fi
 	sfb_move_artifacts
-	sfb_hook_exec post-build-packages $@
+	sfb_hook_exec post-build-packages "$@"
 }
 
 sfb_build() {
