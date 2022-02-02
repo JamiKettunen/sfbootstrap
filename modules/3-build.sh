@@ -36,6 +36,10 @@ sfb_build_hal() {
 		sfb_log "Copying built sailfish-fpd-community HAL files..."
 		sfb_chroot sfossdk sh -c 'hybris/mw/sailfish-fpd-community*/rpm/copy-hal.sh' || return 1
 	fi
+	if sfb_array_contains "^hwcrypt$" "${targets[@]}"; then
+		sfb_log "Copying built hwcrypt HAL files..."
+		sfb_chroot sfossdk sh -c 'hybris/mw/hwcrypt*/rpm/copy-hal.sh' || return 1
+	fi
 	sfb_hook_exec post-build-hal
 }
 sfb_build_kernel() { sfb_build_hal hybris-boot; }
