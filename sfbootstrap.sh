@@ -20,6 +20,7 @@ SFB_KNOWN_CONFIG_VARS=(
 	DEVICE_PRETTY HOOKS_DEVICE LINKS
 )
 SFB_YESNO_REGEX="^([yY].*|[nN].*|)$"
+SFB_PRETTYNAME_REGEX="^[a-zA-Z0-9\ \(\)]+$"
 
 # Runtime vars
 ###############
@@ -217,9 +218,9 @@ sfb_pick_device() {
 }
 sfb_device_setup() {
 	sfb_prompt "Device vendor (e.g. lg):" VENDOR "^[a-z]+$"
-	sfb_prompt "Pretty form vendor name (e.g. LG):" VENDOR_PRETTY "^[a-zA-Z0-9\ \(\)]+$"
+	sfb_prompt "Pretty form vendor name (e.g. LG):" VENDOR_PRETTY "$SFB_PRETTYNAME_REGEX"
 	sfb_prompt "Device board name (e.g. hammerhead):" DEVICE "^[a-z0-9]+$"
-	sfb_prompt "Pretty form device name (e.g. Nexus 5):" DEVICE_PRETTY "^[a-zA-Z0-9\ \(\)]+$"
+	sfb_prompt "Pretty form device name (e.g. Nexus 5):" DEVICE_PRETTY "$SFB_PRETTYNAME_REGEX"
 	sfb_prompt "Device architecture (aarch64/armv7hl/i486):" PORT_ARCH "^(aarch64|armv7hl|i486)$"
 	sfb_prompt "Device SoC (qcom/exynos/mediatek/other):" SOC "^(qcom|exynos|mediatek|other)$"
 	sfb_prompt "Port type (hybris/native):" PORT_TYPE "^(hybris|native)$"
