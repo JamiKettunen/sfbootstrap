@@ -20,7 +20,7 @@ SFB_KNOWN_CONFIG_VARS=(
 	DEVICE_PRETTY HOOKS_DEVICE LINKS
 )
 SFB_YESNO_REGEX="^([yY].*|[nN].*|)$"
-SFB_PRETTYNAME_REGEX="^[a-zA-Z0-9\ \(\)]+$"
+SFB_PRETTYNAME_REGEX="^[a-zA-Z0-9\ \(\)+-]+$"
 
 # Runtime vars
 ###############
