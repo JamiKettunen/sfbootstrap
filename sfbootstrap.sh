@@ -222,7 +222,7 @@ sfb_device_setup() {
 	sfb_prompt "Device board name (e.g. hammerhead):" DEVICE "^[a-z0-9]+$"
 	sfb_prompt "Pretty form device name (e.g. Nexus 5):" DEVICE_PRETTY "$SFB_PRETTYNAME_REGEX"
 	sfb_prompt "Device architecture (aarch64/armv7hl/i486):" PORT_ARCH "^(aarch64|armv7hl|i486)$"
-	sfb_prompt "Device SoC (qcom/exynos/mediatek/other):" SOC "^(qcom|exynos|mediatek|other)$"
+	sfb_prompt "Device SoC (qcom/exynos/mediatek/intel/other):" SOC "^(qcom|exynos|mediatek|intel|other)$"
 	sfb_prompt "Port type (hybris/native):" PORT_TYPE "^(hybris|native)$"
 	if [ "$PORT_TYPE" = "hybris" ]; then
 		sfb_prompt "Hybris version (${SFB_SUPPORTED_HYBRIS_VERS// //}):" \
