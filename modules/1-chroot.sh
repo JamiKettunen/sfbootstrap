@@ -121,7 +121,7 @@ sfb_chroot_setup_ubu() {
 	sfb_log "Fetching HAL build (ubuntu-${ubu_ver%-*}) chroot tarball..."
 	sfb_fetch "$ubu_tarball_url" "$SFB_ARC"/$ubu_tarball
 
-	sfb_log "Setting up HAL build chroot..."
+	sfb_log "Setting up HAL build chroot, please wait..."
 	$SUDO rm -rf "$HABUILD_ROOT"
 	$SUDO mkdir -p "$HABUILD_ROOT"
 	sfb_chroot_check_suid
@@ -179,7 +179,7 @@ sfb_chroot_setup_sfossdk() {
 	sfb_log "Fetching SailfishOS SDK chroot tarball..."
 	sfb_fetch "$sdk_tarball_url" "$SFB_ARC"/$sdk_tarball "md5"
 
-	sfb_log "Setting up SailfishOS SDK chroot..."
+	sfb_log "Setting up SailfishOS SDK chroot, please wait..."
 	[ -f "$SFOSSDK_ROOT"/var/log/lastlog ] && $SUDO chattr -i "$SFOSSDK_ROOT"/var/log/lastlog
 	$SUDO rm -rf "$SFOSSDK_ROOT"
 	$SUDO mkdir -p "$PLATFORM_SDK_ROOT"/{targets,toolings,sdks/sfossdk}

@@ -256,7 +256,7 @@ sfb_device_setup() {
 	sfb_device_env $SFB_DEVICE
 }
 sfb_init() {
-	local arg ans unknown_args=()
+	local arg ans unknown_args=() repos=$((${#REPOS[@]}/4))
 	for arg in "$@"; do
 		case $arg in
 			-y|--yes) ans="y" ;;
@@ -268,6 +268,9 @@ sfb_init() {
 	if [ "$DEVICE" ]; then
 		sfb_prompt "Reset build env for $SFB_DEVICE (y/N)?" ans "$SFB_YESNO_REGEX" "$ans"
 		[[ "${ans^^}" != "Y"* ]] && return
+		if [ $repos -gt 0 ]; then
+			sfb_log "Removing directories of $repos repos, please wait..."
+		fi
 	fi
 	sfb_env_reset
 
