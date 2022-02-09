@@ -7,8 +7,6 @@ PORT_ARCH=aarch64
 SOC=qcom
 PORT_TYPE=hybris
 HYBRIS_VER=16.0
-REPO_INIT_URL="https://github.com/sailfishos-oneplus5/android.git"
-#REPO_LOCAL_MANIFESTS_URL="https://github.com/sailfishos-oneplus5/local_manifests.git"
 HAL_MAKE_TARGETS=(hybris-hal droidmedia libbiometry_fp_api)
 RELEASE=4.3.0.12
 #TOOLING_RELEASE=$RELEASE
@@ -33,6 +31,10 @@ REPOS=(
     'https://github.com/sailfishos-oneplus5/droid-hal-cheeseburger.git' rpm '' 0
     'https://github.com/sailfishos-oneplus5/droid-config-cheeseburger.git' hybris/droid-configs '' 0
     'https://github.com/sailfishos-oneplus5/droid-hal-version-cheeseburger.git' hybris/droid-hal-version-cheeseburger '' 0
+)
+REPO_OVERRIDES=(
+    # This project's path is already cloned to above
+    'mer-hybris/hybris-boot'
 )
 LINKS=(
     'Sources' 'https://github.com/sailfishos-oneplus5'
