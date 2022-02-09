@@ -17,7 +17,7 @@ SFB_SUPPORTED_HYBRIS_VERS="10.1 11.0 12.1 13.0 14.1 15.1 16.0 17.1 18.1"
 SFB_KNOWN_CONFIG_VARS=(
 	ANDROID_MAJOR_VERSION DEVICE HABUILD_DEVICE HAL_MAKE_TARGETS HAL_ENV_EXTRA HYBRIS_VER PORT_ARCH PORT_TYPE
 	RELEASE REPOS REPO_INIT_URL SOC TOOLING_RELEASE SDK_RELEASE VENDOR REPO_LOCAL_MANIFESTS_URL VENDOR_PRETTY
-	DEVICE_PRETTY HOOKS_DEVICE LINKS
+	DEVICE_PRETTY HOOKS_DEVICE LINKS REPO_OVERRIDES
 )
 SFB_YESNO_REGEX="^([yY].*|[nN].*|)$"
 SFB_PRETTYNAME_REGEX="^[a-zA-Z0-9\ \(\)+-]+$"
@@ -27,6 +27,8 @@ SFB_PRETTYNAME_REGEX="^[a-zA-Z0-9\ \(\)+-]+$"
 SFB_HOOKS=({pre,post}-{chroot-{setup,enter},build-{hal,packages,dhd,dcd,mw,gg,dhv,image}})
 SFB_IMAGES="" # e.g. "$SFB_ROOT/images/$VENDOR-$DEVICE-$PORT_ARCH"
 SFB_LASTDEVICE=""
+SFB_LOCAL_MANIFESTS="" # e.g. "$ANDROID_ROOT/.repo/local_manifests"
+SFB_OVERRIDES_XML="" # e.g. "$SFB_LOCAL_MANIFESTS/sfbootstrap-overrides.xml"
 SFOSSDK_ROOT="$PLATFORM_SDK_ROOT/sdks/sfossdk"
 HABUILD_ROOT="$PLATFORM_SDK_ROOT/sdks/ubuntu"
 SB2_TOOLING_ROOT=""
@@ -105,6 +107,7 @@ PORT_TYPE=$PORT_TYPE"
 #ANDROID_MAJOR_VERSION=$(sfb_get_droid_major_ver)
 #REPO_INIT_URL=\"https://github.com/mer-hybris/android.git\"
 #REPO_LOCAL_MANIFESTS_URL=\"\"
+#REPO_OVERRIDES=()
 #HAL_MAKE_TARGETS=(hybris-hal droidmedia)
 #HAL_ENV_EXTRA=\"\""
 		fi
@@ -152,11 +155,13 @@ sfb_device_env() {
 		src_dir="native"
 	fi
 	export ANDROID_ROOT="$SFB_ROOT/src/$src_dir"
-	[ -d "$ANDROID_ROOT" ] || mkdir -p "$ANDROID_ROOT"
 	ANDROID_PRODUCT_OUT="$ANDROID_ROOT/out/target/product/$HABUILD_DEVICE"
+	SFB_LOCAL_MANIFESTS="$ANDROID_ROOT/.repo/local_manifests"
+	SFB_OVERRIDES_XML="$SFB_LOCAL_MANIFESTS/sfbootstrap-overrides.xml"
 	SB2_TOOLING_ROOT="$PLATFORM_SDK_ROOT/toolings/SailfishOS-$TOOLING_RELEASE"
 	SB2_TARGET_ROOT="$PLATFORM_SDK_ROOT/targets/$VENDOR-$DEVICE-$PORT_ARCH"
 	SFB_IMAGES="$SFB_ROOT/images/$VENDOR-$DEVICE-$PORT_ARCH"
+	[ -d "$ANDROID_ROOT" ] || mkdir -p "$ANDROID_ROOT"
 	if [ "$SFB_DEVICE" != "$SFB_LASTDEVICE" ]; then
 		# we don't want to save the device yet in case one of these fails, yet
 		# sfb_chroot_sb2_setup() requires lastdevice to be saved for the
@@ -192,7 +197,7 @@ sfb_env_reset() {
 
 	rm_lastdevice
 	unset $known_vars SB2_TOOLING_ROOT SB2_TARGET_ROOT ANDROID_ROOT ANDROID_PRODUCT_OUT SFB_DEVICE
-	REPOS=() LINKS=()
+	REPOS=() LINKS=() REPO_OVERRIDES=()
 }
 sfb_get_devices() { find "$SFB_ROOT"/device/* -maxdepth 0 -type d -printf '%f\n' 2>/dev/null; }
 sfb_pick_device() {
@@ -423,7 +428,11 @@ sfb_status() {
 	echo "
    sdk:       $SDK_RELEASE"
 	if [ $repos -gt 0 ]; then
-		echo "   repos:     $repos"
+		printf "   repos:     $repos"
+		if [ ${#REPO_OVERRIDES[@]} -gt 0 ]; then
+			printf " (${#REPO_OVERRIDES[@]} overrides)"
+		fi
+		echo
 	fi
 	if [ "$REPO_LOCAL_MANIFESTS_URL" ]; then
 		echo "   manifests: $REPO_LOCAL_MANIFESTS_URL"
