@@ -46,7 +46,7 @@ sfb_build_kernel() { sfb_build_hal hybris-boot; }
 
 sfb_move_artifacts() {
 	local f
-	if [ $(find "$ANDROID_ROOT/SailfishOS"* -type f -name '*.zip' | wc -l) -eq 0 ]; then
+	if [ $(find "$ANDROID_ROOT/SailfishOS"* -type f -name '*.zip' 2>/dev/null | wc -l) -eq 0 ]; then
 		return # no artifacts to move
 	fi
 
