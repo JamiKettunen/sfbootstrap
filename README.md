@@ -34,7 +34,7 @@ With that the created `images` directory should have the Sailfish OS artifacts f
 ### New ports
 Start with `./sfbootstrap.sh init` and look at the other functions and arguments available under `./sfbootstrap.sh` etc. while following the usual [HADK](https://sailfishos.org/develop/hadk/) and potential [FAQ](https://github.com/mer-hybris/hadk-faq) steps.
 
-For documentation on env.sh variables and whatnot feel free to look at [the sfbootstrap wiki](../../wiki)!
+For documentation on env.sh variables and whatnot feel free to look at [the sfbootstrap wiki](https://github.com/JamiKettunen/sfbootstrap/wiki)!
 
 ## Environment variables
 There are a few configurable (set outside the script in env) variables that can be used by [`sfbootstrap`](sfbootstrap.sh):
