@@ -37,16 +37,9 @@ sfb_setup_hadk_env() {
 export ANDROID_ROOT=\"/parentroot$ANDROID_ROOT\"
 if [ \"\$MERSDKUBU\" ]; then
 	SFB_ROOT=\"/parentroot\$SFB_ROOT\" ANDROID_ROOT=\"/parentroot\$ANDROID_ROOT\"
-fi" env_update=true old_sum new_sum
+fi"
 	env="$(echo "$env" | sed "s|/parentroot$SFB_ROOT/|\$SFB_ROOT/|")"
-	if [ -r "$env_file" ]; then
-		old_sum="$(md5sum "$env_file" | awk '{print $1}')"
-		new_sum="$(echo "$env" | md5sum | awk '{print $1}')"
-		[ "$old_sum" = "$new_sum" ] && env_update=false
-	fi
-	if $env_update; then
-		echo "$env" > "$env_file"
-	fi
+	sfb_write_if_different "$env" "$env_file"
 }
 sfb_chroot_check_suid() {
 	local mnt="$(findmnt -nT "$PLATFORM_SDK_ROOT")" mntdir

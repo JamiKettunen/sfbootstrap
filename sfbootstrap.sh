@@ -373,6 +373,22 @@ sfb_link() {
 	local url="$1" label="${2:-$1}"
 	echo -e "\e]8;;$url\a$label\e]8;;\a"
 }
+sfb_sha256_file() { sha256sum "$1" | awk '{print $1}'; }
+sfb_sha256() { echo -e "$1" | sha256sum | awk '{print $1}'; }
+sfb_write_if_different() {
+	local content="$1" file="$2" write=true old_sum new_sum dir
+	if [ -f "$file" ]; then
+		old_sum="$(sfb_sha256_file "$file")"
+		new_sum="$(sfb_sha256 "$content")"
+		[ "$old_sum" = "$new_sum" ] && write=false
+	fi
+	if $write; then
+		sfb_dbg "writing $file..."
+		dir="$(dirname "$file")"
+		[ -d "$dir" ] || mkdir -p "$dir"
+		echo -e "$content" > "$file"
+	fi
+}
 
 # Misc
 sfb_hook_status() {
