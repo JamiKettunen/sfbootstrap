@@ -24,7 +24,7 @@ sfb_local_repo_state() {
 	fi
 }
 sfb_git_clone_or_pull() {
-	local arg url dir origin branch shallow=0 dir_local cmd=(git) state commits
+	local arg url dir origin branch shallow=0 dir_local cmd=(git) mode state commits
 	for arg in "$@"; do
 		case "$1" in
 			-u) url="$2"; shift ;;
@@ -45,9 +45,9 @@ sfb_git_clone_or_pull() {
 		cmd+=(-C "$dir")
 		sfb_dbg "updating $url clone @ $dir_local (shallow: $shallow)..."
 		if [ $shallow -eq 0 ]; then
-			"${cmd[@]}" pull --recurse-submodules && return
+			"${cmd[@]}" pull --recurse-submodules && return || sfb_warn "Failed to pull updates for $dir_local, trying shallow method..."
 		else
-			"${cmd[@]}" fetch --recurse-submodules --depth 1
+			"${cmd[@]}" fetch --recurse-submodules --depth 1 || sfb_error "Failed to fetch updates for $dir_local!"
 		fi
 
 		state="$(sfb_local_repo_state "$dir" "$branch" "$origin")"
@@ -63,6 +63,7 @@ sfb_git_clone_or_pull() {
 			*) sfb_error "Refusing to update '$dir_local' in a state of '$state'!" ;;
 		esac
 		cmd+=(reset --hard $origin --recurse-submodules)
+		mode="update"
 	else
 		if [ -z "$url" ]; then
 			sfb_error "Cannot create a local repo clone without a URL!"
@@ -75,8 +76,9 @@ sfb_git_clone_or_pull() {
 			cmd+=(--depth 1)
 		fi
 		cmd+=("$url" "$dir")
+		mode="create"
 	fi
-	"${cmd[@]}" || sfb_error "Failed to create a local clone of $url!"
+	"${cmd[@]}" || sfb_error "Failed to $mode local clone of $url!"
 }
 
 sfb_sync_hybris_repos() {
@@ -169,7 +171,7 @@ sfb_sync_extra_repos() {
 
 sfb_sync() {
 	if [ "$PORT_TYPE" = "hybris" ]; then
-		sfb_sync_hybris_repos "$@"
+		sfb_sync_hybris_repos "$@" || return 1
 	fi
 	sfb_sync_extra_repos "$@"
 }
