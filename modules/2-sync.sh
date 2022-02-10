@@ -138,7 +138,7 @@ sfb_sync_hybris_repos() {
 	#sfb_hook_exec post-repo-sync
 }
 sfb_sync_extra_repos() {
-	local clone_only=0 i dir_local url dir branch is_shallow extra_args
+	local clone_only=0 i dir_local url dir branch is_shallow extra_args progress
 	if [ ${#REPOS[@]} -eq 0 ]; then
 		return # no need to setup any extra repos
 	fi
@@ -150,13 +150,14 @@ sfb_sync_extra_repos() {
 		dir_local="${REPOS[$(($i+1))]}"
 		url="${REPOS[$i]}" dir="$ANDROID_ROOT/$dir_local" branch="${REPOS[$(($i+2))]}" is_shallow=${REPOS[$(($i+3))]} extra_args=()
 		#sfb_hook_exec pre-repo-sync "$dir"
+		progress="$(($(($i+4))/4))/$((${#REPOS[@]}/4))"
 		if [ -d "$dir" ]; then
 			if [ $clone_only -eq 1 ]; then
 				continue # avoid repo updates in clone-only mode
 			fi
-			sfb_log "Updating extra repo $dir_local..."
+			sfb_log "Updating extra repo $dir_local ($progress)..."
 		else
-			sfb_log "Cloning extra repo $dir_local..."
+			sfb_log "Cloning extra repo $dir_local ($progress)..."
 		fi
 		if [ "$branch" ]; then
 			extra_args+=(-b $branch)
