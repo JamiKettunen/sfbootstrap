@@ -182,8 +182,21 @@ sfb_device_env() {
 	fi
 }
 sfb_env_reset() {
+	local repos=$((${#REPOS[@]}/4)) i dir_local dir branch state known_vars="${SFB_KNOWN_CONFIG_VARS[*]}"
+	if [ -d "$ANDROID_PRODUCT_OUT" ]; then
+		sfb_log "Removing ANDROID_PRODUCT_OUT for $HABUILD_DEVICE, please wait..."
+		rm -rf "$ANDROID_PRODUCT_OUT"
+	fi
+
+	if sfb_manual_hybris_patches_applied; then
+		sfb_log "Unapplying found patches to hybris tree, please wait..."
+		sfb_chroot habuild "repo sync -l" || sfb_error "Failed to run 'repo sync -l'!"
+	fi
+
+	if [ $repos -gt 0 ]; then
+		sfb_log "Removing directories of $repos repos, please wait..."
+	fi
 	# repo parts => 0:url 1:dir 2:branch 3:is_shallow
-	local i dir_local dir branch state known_vars="${SFB_KNOWN_CONFIG_VARS[*]}"
 	for i in $(seq 0 4 $((${#REPOS[@]}-1))); do
 		dir_local="${REPOS[$(($i+1))]}"
 		dir="$ANDROID_ROOT/$dir_local"
@@ -260,7 +273,7 @@ sfb_device_setup() {
 	sfb_device_env $SFB_DEVICE
 }
 sfb_init() {
-	local arg ans unknown_args=() repos=$((${#REPOS[@]}/4))
+	local arg ans unknown_args=()
 	for arg in "$@"; do
 		case $arg in
 			-y|--yes) ans="y" ;;
@@ -272,9 +285,6 @@ sfb_init() {
 	if [ "$DEVICE" ]; then
 		sfb_prompt "Reset build env for $SFB_DEVICE (y/N)?" ans "$SFB_YESNO_REGEX" "$ans"
 		[[ "${ans^^}" != "Y"* ]] && return
-		if [ $repos -gt 0 ]; then
-			sfb_log "Removing directories of $repos repos, please wait..."
-		fi
 	fi
 	sfb_env_reset
 
