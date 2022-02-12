@@ -384,14 +384,6 @@ sfb_hook_exec() {
 		(. "$hook_path" "$@") || sfb_error "Failed to run $hook_name hook for $SFB_DEVICE!"
 	fi
 }
-sfb_manual_hybris_patches_needed() {
-	local i script patch_cmd
-	for i in $(seq 0 2 $((${#HYBRIS_PATCHER_SCRIPTS[@]}-1))); do
-		patch_cmd="${HYBRIS_PATCHER_SCRIPTS[$i]}"
-		script="${patch_cmd%% *}" # drop args
-		[ -e "$ANDROID_ROOT/$script" ] && return true || sfb_dbg "hybris patcher script '$script' doesn't exist"
-	done
-}
 sfb_manual_hybris_patches_applied() {
 	local i script patch_cmd applied_check_cmd
 	for i in $(seq 0 2 $((${#HYBRIS_PATCHER_SCRIPTS[@]}-1))); do

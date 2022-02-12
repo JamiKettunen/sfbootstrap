@@ -31,9 +31,7 @@ sfb_build_hal() {
 		sfb_error "Sources for hybris-$HYBRIS_VER aren't synced!"
 	fi
 	[ $# -gt 0 ] && targets=($@) || targets=(${HAL_MAKE_TARGETS[*]})
-	if sfb_manual_hybris_patches_needed; then
-		sfb_build_hal_apply_patches || sfb_error "Applying hybris patches failed!"
-	fi
+	sfb_build_hal_apply_patches || sfb_error "Applying hybris patches failed!"
 	sfb_hook_exec pre-build-hal
 	sfb_log "Building HAL components '${targets[*]}' with $SFB_JOBS jobs for $HABUILD_DEVICE..."
 	if [ $ANDROID_MAJOR_VERSION -ge 10 ]; then
