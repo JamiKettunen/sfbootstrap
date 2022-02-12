@@ -129,7 +129,7 @@ sfb_sync_hybris_repos() {
 	fi
 
 	if sfb_manual_hybris_patches_applied; then
-		sfb_prompt "Applied hybris-patches detected; run 'repo sync -l' & discard ALL local changes (y/N)?" ans "$SFB_YESNO_REGEX" "$ans"
+		sfb_prompt "Applied hybris patches detected; run 'repo sync -l' & discard ALL local changes (y/N)?" ans "$SFB_YESNO_REGEX" "$ans"
 		[[ "${ans^^}" != "Y"* ]] && return
 		sfb_chroot habuild "repo sync -l" || return 1
 	fi

@@ -3,13 +3,22 @@ module_name=build
 SFB_BP="rpm/dhd/helpers/build_packages.sh"
 
 sfb_build_hal_apply_patches() {
+	local i patch_cmd script
 	if sfb_manual_hybris_patches_applied; then
 		return # already applied
 	fi
 
 	#sfb_hook_exec pre-build-patches
-	sfb_log "Applying patches for hybris-$HYBRIS_VER..."
-	sfb_chroot habuild "hybris-patches/apply-patches.sh --mb" || return 1
+	for i in $(seq 0 2 $((${#HYBRIS_PATCHER_SCRIPTS[@]}-1))); do
+		patch_cmd="${HYBRIS_PATCHER_SCRIPTS[$i]}"
+		script="${patch_cmd%% *}" # drop args
+		if [ ! -e "$ANDROID_ROOT/$script" ]; then
+			sfb_dbg "hybris patcher script '$script' doesn't exist"
+			continue
+		fi
+		sfb_log "Running '$patch_cmd'..."
+		sfb_chroot habuild "$patch_cmd" || return 1
+	done
 	#sfb_hook_exec post-build-patches
 }
 sfb_build_hal() {
@@ -22,7 +31,9 @@ sfb_build_hal() {
 		sfb_error "Sources for hybris-$HYBRIS_VER aren't synced!"
 	fi
 	[ $# -gt 0 ] && targets=($@) || targets=(${HAL_MAKE_TARGETS[*]})
-	sfb_build_hal_apply_patches || sfb_error "Applying hybris-patches failed!"
+	if sfb_manual_hybris_patches_needed; then
+		sfb_build_hal_apply_patches || sfb_error "Applying hybris patches failed!"
+	fi
 	sfb_hook_exec pre-build-hal
 	sfb_log "Building HAL components '${targets[*]}' with $SFB_JOBS jobs for $HABUILD_DEVICE..."
 	if [ $ANDROID_MAJOR_VERSION -ge 10 ]; then

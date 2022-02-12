@@ -17,7 +17,7 @@ SFB_SUPPORTED_HYBRIS_VERS="10.1 11.0 12.1 13.0 14.1 15.1 16.0 17.1 18.1"
 SFB_KNOWN_CONFIG_VARS=(
 	ANDROID_MAJOR_VERSION DEVICE HABUILD_DEVICE HAL_MAKE_TARGETS HAL_ENV_EXTRA HYBRIS_VER PORT_ARCH PORT_TYPE
 	RELEASE REPOS REPO_INIT_URL SOC TOOLING_RELEASE SDK_RELEASE VENDOR REPO_LOCAL_MANIFESTS_URL VENDOR_PRETTY
-	DEVICE_PRETTY HOOKS_DEVICE LINKS REPO_OVERRIDES
+	DEVICE_PRETTY HOOKS_DEVICE LINKS REPO_OVERRIDES HYBRIS_PATCHER_SCRIPTS
 )
 SFB_YESNO_REGEX="^([yY].*|[nN].*|)$"
 SFB_PRETTYNAME_REGEX="^[a-zA-Z0-9\ \(\)+-]+$"
@@ -108,6 +108,7 @@ PORT_TYPE=$PORT_TYPE"
 #REPO_INIT_URL=\"https://github.com/mer-hybris/android.git\"
 #REPO_LOCAL_MANIFESTS_URL=\"\"
 #REPO_OVERRIDES=()
+#HYBRIS_PATCHER_SCRIPTS=()
 #HAL_MAKE_TARGETS=(hybris-hal droidmedia)
 #HAL_ENV_EXTRA=\"\""
 		fi
@@ -151,6 +152,9 @@ sfb_device_env() {
 		: ${HOOKS_DEVICE:=$SFB_DEVICE}
 		: ${HAL_MAKE_TARGETS:=hybris-hal droidmedia}
 		: ${REPO_INIT_URL:=https://github.com/mer-hybris/android.git}
+		if [ $ANDROID_MAJOR_VERSION -ge 9 ]; then
+			HYBRIS_PATCHER_SCRIPTS+=("hybris-patches/apply-patches.sh --mb" "grep -q droid-hybris system/core/init/init.cpp")
+		fi
 	else
 		src_dir="native"
 	fi
@@ -197,7 +201,7 @@ sfb_env_reset() {
 
 	rm_lastdevice
 	unset $known_vars SB2_TOOLING_ROOT SB2_TARGET_ROOT ANDROID_ROOT ANDROID_PRODUCT_OUT SFB_DEVICE
-	REPOS=() LINKS=() REPO_OVERRIDES=()
+	REPOS=() LINKS=() REPO_OVERRIDES=() HYBRIS_PATCHER_SCRIPTS=()
 }
 sfb_get_devices() { find "$SFB_ROOT"/device/* -maxdepth 0 -type d -printf '%f\n' 2>/dev/null; }
 sfb_pick_device() {
@@ -370,12 +374,26 @@ sfb_hook_exec() {
 		(. "$hook_path" "$@") || sfb_error "Failed to run $hook_name hook for $SFB_DEVICE!"
 	fi
 }
+sfb_manual_hybris_patches_needed() {
+	local i script patch_cmd
+	for i in $(seq 0 2 $((${#HYBRIS_PATCHER_SCRIPTS[@]}-1))); do
+		patch_cmd="${HYBRIS_PATCHER_SCRIPTS[$i]}"
+		script="${patch_cmd%% *}" # drop args
+		[ -e "$ANDROID_ROOT/$script" ] && return true || sfb_dbg "hybris patcher script '$script' doesn't exist"
+	done
+}
 sfb_manual_hybris_patches_applied() {
-	# 1. need to manually apply hybris-patches?
-	# 2. apply-patches.sh exists?
-	# 3. patches already applied?
-	[[ $ANDROID_MAJOR_VERSION -ge 9 && -e "$ANDROID_ROOT/hybris-patches/apply-patches.sh" ]] && \
-		grep -q 'droid-hybris' "$ANDROID_ROOT/system/core/init/init.cpp"
+	local i script patch_cmd applied_check_cmd
+	for i in $(seq 0 2 $((${#HYBRIS_PATCHER_SCRIPTS[@]}-1))); do
+		patch_cmd="${HYBRIS_PATCHER_SCRIPTS[$i]}"
+		script="${patch_cmd%% *}" # drop args
+		if [ ! -e "$ANDROID_ROOT/$script" ]; then
+			sfb_dbg "hybris patcher script '$script' doesn't exist"
+			continue
+		fi
+		applied_check_cmd="${HYBRIS_PATCHER_SCRIPTS[$(($i+1))]}"
+		($applied_check_cmd) && return true
+	done
 }
 sfb_link() {
 	local url="$1" label="${2:-$1}"
