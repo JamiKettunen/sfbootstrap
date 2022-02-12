@@ -153,7 +153,10 @@ sfb_device_env() {
 		: ${HAL_MAKE_TARGETS:=hybris-hal droidmedia}
 		: ${REPO_INIT_URL:=https://github.com/mer-hybris/android.git}
 		if [ $ANDROID_MAJOR_VERSION -ge 9 ]; then
-			HYBRIS_PATCHER_SCRIPTS+=("hybris-patches/apply-patches.sh --mb" "grep -q droid-hybris system/core/init/init.cpp")
+			HYBRIS_PATCHER_SCRIPTS=(
+				"hybris-patches/apply-patches.sh --mb" "grep -q droid-hybris system/core/init/init.cpp"
+				"${HYBRIS_PATCHER_SCRIPTS[@]}"
+			)
 		fi
 	else
 		src_dir="native"
@@ -394,7 +397,7 @@ sfb_manual_hybris_patches_applied() {
 			continue
 		fi
 		applied_check_cmd="${HYBRIS_PATCHER_SCRIPTS[$(($i+1))]}"
-		($applied_check_cmd) && return true
+		(eval "$applied_check_cmd") && return true
 	done
 }
 sfb_link() {
