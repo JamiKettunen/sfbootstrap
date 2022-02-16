@@ -4,10 +4,23 @@ SFB_ARC="$SFB_ROOT/archives"
 SFB_SDK_URL="http://releases.sailfishos.org/sdk"
 
 sfb_fetch() {
-	local url="$1" file="$2" hashtype="$3" dir="$(readlink -f "$(dirname "$2")")" \
-	      hashcmd checksum_remote checksum_local filename fetch=1
-	filename="$(basename "$file")"
+	local arg url file hashtype error=false fail_on_error=true dir filename \
+	      hashcmd checksum_remote checksum_local fetch=1
+	for arg in "$@"; do
+		case "$1" in
+			-u) url="$2"; shift ;;
+			-o) file="$2"; shift ;;
+			-c) hashtype="$2"; shift ;;
+			-F) fail_on_error=false ;;
+		esac
+		shift
+	done
+	if [[ -z "$url" || -z "$file" ]]; then
+		sfb_error "A specified URL and output file are required to fetch web content!"
+	fi
+	dir="$(readlink -f "$(dirname "$file")")"
 	[ -d "$dir" ] || mkdir -p "$dir"
+	filename="$(basename "$file")"
 	if [[ -f "$file" && "$hashtype" ]]; then
 		checksum_remote="$(wget "$url.$hashtype" -t 3 -qO - | awk '{print $1}')"
 		if [ -z "$checksum_remote" ]; then
@@ -27,7 +40,11 @@ sfb_fetch() {
 	fi
 	if [ $fetch -eq 1 ]; then
 		sfb_dbg "downloading $url..."
-		wget "$url" -t 3 --show-progress -qO "$file" || sfb_error "Failed to download $url!"
+		wget "$url" -t 3 --show-progress -qO "$file" || error=true
+		if $error; then
+			rm "$file" # remove residue 0 byte output file on dl errors
+			$fail_on_error && sfb_error "Failed to download $url!"
+		fi
 	fi
 }
 sfb_ver() { echo "$*" | awk -F. '{ printf("%d%02d%02d%02d\n", $1,$2,$3,$4); }'; }
@@ -68,8 +85,8 @@ sfb_chroot_sb2_setup() {
 	target_url="$SFB_SDK_URL/targets/$target"
 
 	sfb_log "Fetching Sratchbox2 tooling & target chroot tarballs..."
-	sfb_fetch "$tooling_url" "$SFB_ARC"/$tooling "md5sum"
-	sfb_fetch "$target_url" "$SFB_ARC"/$target "md5sum"
+	sfb_fetch -u "$tooling_url" -o "$SFB_ARC"/$tooling -c "md5sum"
+	sfb_fetch -u "$target_url" -o "$SFB_ARC"/$target -c "md5sum"
 
 	sfb_log "Setting up Scratchbox2 tooling & target $VENDOR-$DEVICE-$PORT_ARCH..."
 	$SUDO rm -rf "$SB2_TARGET_ROOT"*
@@ -119,7 +136,7 @@ sfb_chroot_setup_ubu() {
 	ubu_tarball_url="http://releases.sailfishos.org/ubu/$ubu_tarball"
 
 	sfb_log "Fetching HAL build (ubuntu-${ubu_ver%-*}) chroot tarball..."
-	sfb_fetch "$ubu_tarball_url" "$SFB_ARC"/$ubu_tarball
+	sfb_fetch -u "$ubu_tarball_url" -o "$SFB_ARC"/$ubu_tarball
 
 	sfb_log "Setting up HAL build chroot, please wait..."
 	$SUDO rm -rf "$HABUILD_ROOT"
@@ -170,6 +187,7 @@ sfb_chroot_setup_ubu() {
 	fi
 }
 sfb_chroot_setup_sfossdk() {
+	local extra_fetch_args=()
 	if sfb_chroot_exists_sfossdk && [[ -d "$PLATFORM_SDK_ROOT/toolings" || -d "$PLATFORM_SDK_ROOT/targets" ]]; then
 		sfb_log "Removing potentially existing sb2 targets & toolings..."
 		sfb_chroot sfossdk sh -c 'for t in $(sdk-assistant target list); do sdk-assistant target remove -y $t; done'
@@ -177,7 +195,15 @@ sfb_chroot_setup_sfossdk() {
 	fi
 
 	sfb_log "Fetching SailfishOS SDK chroot tarball..."
-	sfb_fetch "$sdk_tarball_url" "$SFB_ARC"/$sdk_tarball "md5"
+	if [[ "$SDK_RELEASE" != "latest" && "$sdk_tarball_url" != *"/$SDK_RELEASE.deprecated/"* ]]; then
+		extra_fetch_args+=(-F)
+	fi
+	if ! sfb_fetch -u "$sdk_tarball_url" -o "$SFB_ARC"/$sdk_tarball -c "md5" "${extra_fetch_args[@]}"; then
+		# only tried when failed to download non-deprecated versioned SDK_RELEASE tarball
+		sdk_tarball_url="${sdk_tarball_url/\/$SDK_RELEASE\//\/$SDK_RELEASE.deprecated\/}"
+		sfb_fetch -u "$sdk_tarball_url" -o "$SFB_ARC"/$sdk_tarball -c "md5"
+		sfb_warn "This port ($SFB_DEVICE) may be unmaintained; please update it or set SDK_RELEASE to '$SDK_RELEASE.deprecated'!"
+	fi
 
 	sfb_log "Setting up SailfishOS SDK chroot, please wait..."
 	[ -f "$SFOSSDK_ROOT"/var/log/lastlog ] && $SUDO chattr -i "$SFOSSDK_ROOT"/var/log/lastlog
