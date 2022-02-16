@@ -397,8 +397,9 @@ sfb_manual_hybris_patches_applied() {
 			continue
 		fi
 		applied_check_cmd="${HYBRIS_PATCHER_SCRIPTS[$(($i+1))]}"
-		(eval "$applied_check_cmd") && return true
+		(eval "$applied_check_cmd") && return 0 # patches detected
 	done
+	return 1 # no patches detected
 }
 sfb_link() {
 	local url="$1" label="${2:-$1}"
