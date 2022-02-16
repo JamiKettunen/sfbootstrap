@@ -30,6 +30,7 @@ SFB_LASTDEVICE=""
 SFB_LOCAL_MANIFESTS="" # e.g. "$ANDROID_ROOT/.repo/local_manifests"
 SFB_OVERRIDES_XML="" # e.g. "$SFB_LOCAL_MANIFESTS/sfbootstrap-overrides.xml"
 SFOSSDK_ROOT="$PLATFORM_SDK_ROOT/sdks/sfossdk"
+SFOSSDK_CHROOT="$SFOSSDK_ROOT/sdk-chroot"
 HABUILD_ROOT="$PLATFORM_SDK_ROOT/sdks/ubuntu"
 SB2_TOOLING_ROOT=""
 SB2_TARGET_ROOT=""
@@ -132,6 +133,13 @@ PORT_TYPE=$PORT_TYPE"
 export VENDOR DEVICE PORT_ARCH RELEASE"
 	} > "$device_dir/env.sh"
 }
+sfb_update_sfossdk_chroot() {
+	if [ -f "$SFOSSDK_ROOT/sdk-chroot" ]; then
+		SFOSSDK_CHROOT="$SFOSSDK_ROOT/sdk-chroot"
+	else
+		SFOSSDK_CHROOT="$SFOSSDK_ROOT/mer-sdk-chroot"
+	fi
+}
 save_lastdevice() { echo "$SFB_DEVICE" > "$SFB_ROOT"/.lastdevice; }
 rm_lastdevice() { rm -f "$SFB_ROOT"/.lastdevice; }
 sfb_device_env() {
@@ -183,6 +191,7 @@ sfb_device_env() {
 	else
 		save_lastdevice
 	fi
+	sfb_update_sfossdk_chroot
 }
 sfb_env_reset() {
 	local repos=$((${#REPOS[@]}/4)) i dir_local dir branch state known_vars="${SFB_KNOWN_CONFIG_VARS[*]}"
@@ -506,7 +515,7 @@ sfb_config() {
 			[[ "$var" =~ ^[A-Z_]+$ ]] || continue
 			eval "case $var in
 				SFB_C_*) continue ;; # skip color constants
-				SB2_TOOLING_ROOT|SB2_TARGET_ROOT|ANDROID_ROOT|ANDROID_PRODUCT_OUT|PLATFORM_SDK_ROOT|SFOSSDK_ROOT|HABUILD_ROOT|SFB_*|SUDO|${known_vars// /|}) : ;;
+				SB2_TOOLING_ROOT|SB2_TARGET_ROOT|ANDROID_ROOT|ANDROID_PRODUCT_OUT|PLATFORM_SDK_ROOT|SFOSSDK_ROOT|SFOSSDK_CHROOT|HABUILD_ROOT|SFB_*|SUDO|${known_vars// /|}) : ;;
 				*) sfb_dbg \"skipped var=$var\"; continue ;; # skip others
 			esac"
 			declare_var="$(declare -p $var)"

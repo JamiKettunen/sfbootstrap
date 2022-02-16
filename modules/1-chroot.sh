@@ -213,7 +213,8 @@ sfb_chroot_setup_sfossdk() {
 	$SUDO tar xpf "$SFB_ARC"/$sdk_tarball -C "$SFOSSDK_ROOT" || return 1
 
 	# setup proper env for non-interactive shell sessions
-	$SUDO sed -i "$SFOSSDK_ROOT"/mer-sdk-chroot \
+	sfb_update_sfossdk_chroot
+	$SUDO sed -i "$SFOSSDK_CHROOT" \
 		-e '/^sudo oneshot.*/a [ $# -gt 0 ] && . ${HOMEDIR}/.mersdk.profile' \
 		-e '/echo "Mounting.*/ s|$| >/dev/null|' \
 		-e '/echo "Entering chroot as .*/ s|$| >/dev/null|'
@@ -316,7 +317,7 @@ sfb_chroot() {
 			sfb_chroot_exists_sfossdk || sfb_error "Chroot for sfossdk isn't setup yet; check out '$0 chroot setup'!"
 			sfb_setup_hadk_env
 			sfb_hook_exec pre-chroot-enter sfossdk
-			"$SFOSSDK_ROOT/mer-sdk-chroot" -m root "$@"; ret=$?
+			"$SFOSSDK_CHROOT" -m root "$@"; ret=$?
 			sfb_hook_exec post-chroot-enter sfossdk
 			;;
 		habuild)
@@ -341,6 +342,6 @@ sfb_chroot_setup_usage() {
 		habuild "Enter/run commands Android HAL build chroot"
 	)
 	sfb_usage_chroot_setup_args=("-y|--yes" "Answer yes to remove existing build chroot questions automatically")
-	sfb_usage_chroot_sfossdk_args=("" "[args to optionally pass directly to mer-sdk-chroot script]")
+	sfb_usage_chroot_sfossdk_args=("" "[args to optionally pass directly to $(basename "$SFOSSDK_CHROOT") script]")
 	sfb_usage_chroot_habuild_args=("" "[args to optionally pass directly to ubu-chroot script]")
 }
