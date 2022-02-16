@@ -10,7 +10,7 @@ HYBRIS_VER=16.0
 HAL_MAKE_TARGETS=(hybris-hal droidmedia libbiometry_fp_api)
 RELEASE=4.3.0.12
 #TOOLING_RELEASE=$RELEASE
-#SDK_RELEASE=latest
+SDK_RELEASE=3.7.4
 REPOS_COMMON=(
     # OnePlus 5/5T common HAL
     'https://github.com/sailfishos-oneplus5/android_device_oneplus_msm8998-common.git' device/oneplus/msm8998-common "lineage-$HYBRIS_VER" 1
