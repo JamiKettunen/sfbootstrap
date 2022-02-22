@@ -371,7 +371,7 @@ sfb_load_modules() {
 		f1="$(declare -F)"
 		. "$SFB_ROOT/modules/$module"
 		f2="$(declare -F)"
-		funcs=$(comm -13 <(echo "$f1" ) <(echo "$f2") | wc -l)
+		funcs=$(comm -13 <(echo "$f1" ) <(echo "$f2") 2>/dev/null | wc -l)
 		[ -z "$module_name" ] && module_name="${module%.sh}"
 		setup_usage="sfb_${module_name}_setup_usage"
 		if declare -F "$setup_usage" >/dev/null; then
