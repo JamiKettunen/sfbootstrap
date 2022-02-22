@@ -186,7 +186,7 @@ sfb_device_env() {
 		if sfb_chroot_exists_sfossdk && ! sfb_chroot_exists_sb2_target; then
 			sfb_chroot_sb2_setup
 		fi
-		sfb_sync_extra_repos
+		sfb_sync_extra_repos --clone-only
 		trap - EXIT
 	else
 		save_lastdevice
