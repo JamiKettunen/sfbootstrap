@@ -317,6 +317,8 @@ sfb_checkhost() {
 	local hostkern="$(uname -s)" hostarch="$(uname -m)"
 	if [ "$hostkern" != "Linux" ]; then
 		sfb_error "Your host kernel $hostkern isn't supported (only Linux is)!"
+	elif grep -qi 'microsoft' /proc/version; then
+		sfb_error "WSL is not a supported build environment, please setup a VM or dual-boot!"
 	elif [ "$hostarch" != "x86_64" ]; then
 		sfb_error "Your host CPU architecture $hostarch isn't supported (only x86_64 is)!"
 	fi
