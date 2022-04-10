@@ -10,7 +10,7 @@ HYBRIS_VER=17.1
 HAL_MAKE_TARGETS=(hybris-hal droidmedia libbiometry_fp_api)
 RELEASE=4.4.0.58
 #TOOLING_RELEASE=$RELEASE
-SDK_RELEASE=3.9.6
+#SDK_RELEASE=3.9.6
 REPOS_COMMON=(
     # Xiaomi MI 6 common HAL
     'https://github.com/SailfishOS-sagit/android_device_xiaomi_msm8998-common.git' device/xiaomi/msm8998-common "hybris-$HYBRIS_VER" 1
